@@ -10,4 +10,7 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.0/contr
 contract DynamicNFT is ERC721URIStorage, Ownable {
     // contatore per assegnare ID unici agli NFT
     uint256 private tokenCounter;
+
+    // evento per tracciare la creazione di un NFT
+    event NFTCreated(uint256 indexed tokenId, string tokenURI);
 }
