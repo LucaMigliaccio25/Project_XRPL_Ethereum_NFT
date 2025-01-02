@@ -16,4 +16,10 @@ contract DynamicNFT is ERC721URIStorage, Ownable {
 
     // evento per aggiornare i metadati dell'NFT creato
     event MetadataUpdated(uint256 indexed tokenId, string newTokenURI);
+
+    /// @notice Costruttore per inizializzare il contratto
+    /// @dev Inizializzazione di nome e simbolo del token
+    constructor() ERC721("DynamicNFT", "DNFT") {
+        tokenCounter = 0; // inizialmente dev'essere pari a 0
+    }
 }
