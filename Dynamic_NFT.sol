@@ -22,4 +22,18 @@ contract DynamicNFT is ERC721URIStorage, Ownable {
     constructor() ERC721("DynamicNFT", "DNFT") {
         tokenCounter = 0; // inizialmente dev'essere pari a 0
     }
+
+    /// @notice Funzione per creare un nuovo NFT
+    /// @param recipient è l'indirizzo che riceverà l'NFT
+    /// @param tokenURI è l'URI iniziale dei metadati dell'NFT
+    /// @return tokenId è l'ID dell'NFT creato
+    function createNFT(address recipient, string memory tokenURI) public onlyOwner returns (uint256)
+    {
+        uint256 newTokenId = tokenCounter; // assegniamo il valore del contatore all'ID del nuovo token
+        _safeMint(recipient, newTokenId); // creiamo l'NFT e lo assegniamo al destinatario
+        _setTokenURI(newTokenId, tokenURI); // assegniamo i metadati iniziali
+        emit NFTCreated(newTokenId, tokenURI); // emissione dell'evento di creazione dell'NFT (Log)
+        tokenCounter += 1; // incrementiamo il contatore per i futuri NFT
+        return newTokenId;
+    }
 }
