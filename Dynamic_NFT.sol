@@ -36,4 +36,14 @@ contract DynamicNFT is ERC721URIStorage, Ownable {
         tokenCounter += 1; // incrementiamo il contatore per i futuri NFT
         return newTokenId;
     }
+
+    /// @notice Funzione per aggiornare i metadati di un NFT esistente
+    /// @param tokenId è l'ID dell'NFT da aggiornare
+    /// @param newTokenURI è il nuovo URI dei metadati
+    function updateMetadata(uint256 tokenId, string memory newTokenURI) public {
+        require(_existsInternal(tokenId), "Token ID does not exist");
+        require(ownerOf(tokenId) == msg.sender, "Only the owner can update metadata");
+        _setTokenURI(tokenId, newTokenURI); // aggiorniamo i metadati
+        emit MetadataUpdated(tokenId, newTokenURI); // emissione dell'evento di aggiornamento (Log)
+    }
 }
