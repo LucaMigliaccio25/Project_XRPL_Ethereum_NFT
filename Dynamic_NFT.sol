@@ -8,5 +8,6 @@ import "https://github.com/OpenZeppelin/openzeppelin-contracts/blob/v4.9.0/contr
 /// @title DynamicNFT
 /// @notice Smart Contract per creare un NFT dinamico che rappresenta un avatar (con metadati variabili)
 contract DynamicNFT is ERC721URIStorage, Ownable {
-    
+    // contatore per assegnare ID unici agli NFT
+    uint256 private tokenCounter;
 }
