@@ -8,6 +8,7 @@ from xrpl.models.transactions import NFTokenMint, NFTokenCreateOffer, NFTokenAcc
 from xrpl.utils import str_to_hex, datetime_to_ripple_time
 from xrpl.ledger import get_latest_validated_ledger_sequence
 from datetime import datetime, timedelta
+from utils_bridge import trigger_ethereum_nft
 
 client = JsonRpcClient("https://s.altnet.rippletest.net:51234")
 
@@ -144,6 +145,11 @@ def create_and_transfer_nft(seed_company, product_uri, taxon, seed_receiver = No
 
         if not response_accept_sell_offer['meta']['TransactionResult'] == 'tesSUCCESS':
             raise Exception(f'Didn\'t work: {e}')
+        
+        # Trigger del contratto Ethereum
+        print("Attivazione del contratto Ethereum...")
+        receipt = trigger_ethereum_nft(product_uri, wallet_receiver.classic_address)
+        print("NFT dinamico creato su Ethereum.")
     
         return wallet_receiver, NFT_token_id
     except Exception as e:
