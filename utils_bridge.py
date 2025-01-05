@@ -1,3 +1,4 @@
+# CODICE PROGETTO XRPL
 from xrpl.account import get_balance, get_next_valid_seq_number
 from xrpl.clients import JsonRpcClient
 from xrpl.wallet import Wallet, generate_faucet_wallet
@@ -94,6 +95,8 @@ def accept_sell_offer(seed, offer_index):
 MIN_AMOUNT = "2000"
 MIN_FEE = "20"
 
+#----------------------------------------------------------------------------------------------------
+# CODICE PROGETTO ETHEREUM-XRPL
 from web3 import Web3
 import os
 from dotenv import load_dotenv
@@ -132,14 +135,31 @@ def trigger_ethereum_nft(uri, owner_address):
     Trigger the Ethereum smart contract to create a dynamic NFT.
     """
     account = web3.eth.account.from_key(private_key)
-    nonce = web3.eth.get_transaction_count(account.address) # metodo corretto
+    # nonce = web3.eth.get_transaction_count(account.address)
+    nonce = web3.eth.get_transaction_count(account.address)
 
+    '''
     # Creazione dell'NFT su Ethereum
     txn = contract.functions.createNFT(owner_address, uri).build_transaction({
         'from': account.address,
         'nonce': nonce,
         'gas': 300000,  # Regola il limite di gas
-        'gasPrice': web3.to_wei('10', 'gwei')  # Regola il gasPrice
+        'gasPrice': web3.to_wei('10', 'gwei') # Regola il gasPrice
+    })
+    '''
+    
+    # Ottieni il gas price dinamico e applica un incremento minimo
+    current_gas_price = web3.eth.gas_price
+    adjusted_gas_price = current_gas_price + web3.to_wei('2', 'gwei')  # Aggiunge 2 gwei come incremento
+
+    print(f"Utilizzando gas price: {web3.from_wei(adjusted_gas_price, 'gwei')} gwei")
+
+    # Creazione dell'NFT su Ethereum
+    txn = contract.functions.createNFT(owner_address, uri).build_transaction({
+        'from': account.address,
+        'nonce': nonce,
+        'gas': 300000,  # Limite di gas
+        'gasPrice': adjusted_gas_price  # Gas price regolato
     })
 
     signed_txn = web3.eth.account.sign_transaction(txn, private_key)
@@ -147,10 +167,11 @@ def trigger_ethereum_nft(uri, owner_address):
 
     print(f"Transazione inviata su Ethereum: {web3.to_hex(tx_hash)}")
     receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
-    print(f"Transazione confermata: {receipt}")
+    print("Transazione confermata") ### PER PROVA E OTTENERE STAMPA PIù SEMPLICE
+    # print(f"Transazione confermata: {receipt}")
     return receipt
 
-def create_and_transfer_nft(seed_company, product_uri, taxon, seed_receiver = None, chain_url = "https://s.altnet.rippletest.net:51234"):
+def create_and_transfer_nft(seed_company, product_uri, avatar_uri, taxon, seed_receiver = None, chain_url = "https://s.altnet.rippletest.net:51234"):
     try:
         client=JsonRpcClient(chain_url)
 
@@ -207,8 +228,9 @@ def create_and_transfer_nft(seed_company, product_uri, taxon, seed_receiver = No
         
         # Trigger del contratto Ethereum
         print("Attivazione del contratto Ethereum...")
-        contract_address = os.getenv("CONTRACT_ADDRESS")
-        receipt = trigger_ethereum_nft(product_uri, contract_address)
+        account_address = "0x0CbB29c4659DB51384fA809e0a7b7147c315DC4c" # indirizzo Metamask
+        receipt = trigger_ethereum_nft(avatar_uri, account_address)
+        #print(f"Dati receipt: {receipt}")
         print("NFT dinamico creato su Ethereum.")
         
         # Recupera il token_id dai log
@@ -218,8 +240,41 @@ def create_and_transfer_nft(seed_company, product_uri, taxon, seed_receiver = No
             print(f"Token ID: {token_id}")
 
         # Verifica l'NFT appena creato
-        verify_nft(token_id)
+        token_uri = verify_nft(token_id)
     
-        return receipt, NFT_token_id
+        return receipt, NFT_token_id, token_id, token_uri
     except Exception as e:
         raise Exception(f'Didn\'t work: {e}')
+
+def update_nft_metadata(token_id, new_uri):
+    """
+    Aggiorna i metadati di un NFT esistente.
+    """
+    try:
+        account = web3.eth.account.from_key(private_key)
+        nonce = web3.eth.get_transaction_count(account.address)
+
+        # Ottieni il gas price corrente e aumentalo leggermente
+        current_gas_price = web3.eth.gas_price
+        adjusted_gas_price = int(current_gas_price * 1.1)  # Aumenta del 10%
+        print(f"Utilizzando gas price: {web3.from_wei(adjusted_gas_price, 'gwei')} gwei")
+
+        # Transazione per aggiornare i metadati
+        txn = contract.functions.updateMetadata(token_id, new_uri).build_transaction({
+            'from': account.address,
+            'nonce': nonce,
+            'gas': 300000,  # Limite di gas regolabile
+            'gasPrice': adjusted_gas_price
+        })
+
+        # Firma e invio della transazione
+        signed_txn = web3.eth.account.sign_transaction(txn, private_key)
+        tx_hash = web3.eth.send_raw_transaction(signed_txn.raw_transaction)
+
+        print(f"Transazione inviata per aggiornare i metadati: {web3.to_hex(tx_hash)}")
+        receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+        print(f"Metadati aggiornati: {receipt}")
+        return receipt
+    except Exception as e:
+        print(f"Errore durante l'aggiornamento dei metadati: {e}")
+        return None
