@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 # from typing import Optional
-from utils import create_and_transfer_nft  # Funzione per creare e trasferire l'NFT
+from utils_bridge import create_and_transfer_nft  # Funzione per creare e trasferire l'NFT
 from email_utils import send_email  # Modulo separato per l'invio di email
 import uvicorn
 from random import choice
